@@ -17,7 +17,7 @@ import time
 # Part 1 - Building a Blockchain
 
 class Blockchain:
-
+   #constructor for the class
     def __init__(self):
         self.chain = []
         self.transactions = []
@@ -25,10 +25,12 @@ class Blockchain:
         self.create_block(proof = 1, previous_hash = '0',merkle_root=self.find_merkle_root({'name':'yoshi','id':127}))
         self.nodes = set()
         self.user_property={};
-    
+        
+    #functions to get users
     def get_users(self):
             return self.users
-    
+        
+    #creating a block
     def create_block(self, proof, previous_hash,merkle_root):
         block = {'index': len(self.chain) + 1,
                  'timestamp': str(datetime.datetime.now()),
@@ -39,10 +41,10 @@ class Blockchain:
         self.transactions = []
         self.chain.append(block)
         return block
-
+  #function to find the last block of blockchain
     def get_previous_block(self):
         return self.chain[-1]
-
+  #Consensus Algorithm POW implementation
     def proof_of_work(self, previous_proof):
         new_proof = 1
         check_proof = False
@@ -53,11 +55,11 @@ class Blockchain:
             else:
                 new_proof += 1
         return new_proof
-    
+    #function to get hash of a block or transaction
     def hash(self, block):
         encoded_block = json.dumps(block, sort_keys = True).encode()
         return hashlib.sha256(encoded_block).hexdigest()
-    
+    # checks if current chain is valid or not
     def is_chain_valid(self, chain):
         previous_block = chain[0]
         block_index = 1
@@ -73,7 +75,7 @@ class Blockchain:
             previous_block = block
             block_index += 1
         return True
-    
+    # function to add a transaction
     def add_transaction(self, buyer_id, seller_id, property_id):
         self.transactions.append({'buyer_id': buyer_id,
                                   'seller_id': seller_id,
@@ -83,13 +85,13 @@ class Blockchain:
         previous_block = self.get_previous_block()
         return previous_block['index'] + 1
     
-    
+    # checks if user is already registered
     def check_user(self, u_id):
         for x in self.users:
             if((int)(x['user_id'])==(int)(u_id)):
                 return -1
                 
-            
+     #function to register users       
     def register_user(self,u_id,property_id):  
         if self.check_user(u_id) == -1:
             self.user_property[u_id].append(property_id)
@@ -104,11 +106,11 @@ class Blockchain:
            
            
             
-    
+    #function to add a node
     def add_node(self, address):
         parsed_url = urlparse(address)
         self.nodes.add(parsed_url.netloc)
-    
+    # function to replace the current chain at a node with longest one in blockchain network if its not the longest already
     def replace_chain(self):
         network = self.nodes
         longest_chain = None
@@ -125,6 +127,7 @@ class Blockchain:
             self.chain = longest_chain
             return True
         return False
+    #function to find the merkle root of a block
     def find_merkle_root(self,transactions):
         file_hashes=[]
         for t in transactions:
@@ -157,6 +160,7 @@ class Blockchain:
             
 
 # Part 2 - Mining our Blockchain
+#using flask to send and recieve json requests
 
 # Creating a Web App
 app = Flask(__name__)
@@ -288,7 +292,7 @@ def connect_node():
         return "No node", 400
     for node in nodes:
         blockchain.add_node(node)
-    response = {'message': 'All the nodes are now connected. The Hadcoin Blockchain now contains the following nodes:',
+    response = {'message': 'All the nodes are now connected. The Blockchain now contains the following nodes:',
                 'total_nodes': list(blockchain.nodes)}
     return jsonify(response), 201
 
@@ -305,4 +309,4 @@ def replace_chain():
     return jsonify(response), 200
 
 # Running the app
-app.run(host = '0.0.0.0', port = 5002)
+app.run(host = '0.0.0.0', port = 5003)
