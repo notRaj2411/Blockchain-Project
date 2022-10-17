@@ -1,18 +1,19 @@
-# Module 1 - Create a Blockchain
+# Module 2 - Create a Cryptocurrency
 
 # To be installed:
 # Flask==0.12.2: pip install Flask==0.12.2
 # Postman HTTP Client: https://www.getpostman.com/
+# requests==2.18.4: 
 
 # Importing the libraries
 import datetime
 import hashlib
 import json
-from flask import Flask, jsonify,request
+from flask import Flask, jsonify, request
 import requests
 from uuid import uuid4
 from urllib.parse import urlparse
-
+import time
 # Part 1 - Building a Blockchain
 
 class Blockchain:
@@ -20,16 +21,21 @@ class Blockchain:
     def __init__(self):
         self.chain = []
         self.transactions = []
-        self.create_block(proof = 1, previous_hash = '0')
-       
+        self.users= []
+        self.create_block(proof = 1, previous_hash = '0',merkle_root=self.find_merkle_root({'name':'yoshi','id':127}))
         self.nodes = set()
-
-    def create_block(self, proof, previous_hash):
+        self.user_property={};
+    
+    def get_users(self):
+            return self.users
+    
+    def create_block(self, proof, previous_hash,merkle_root):
         block = {'index': len(self.chain) + 1,
                  'timestamp': str(datetime.datetime.now()),
                  'proof': proof,
                  'previous_hash': previous_hash,
-                 'transactions': self.transactions}
+                 'transactions': self.transactions,
+                 'merkle-root':merkle_root}
         self.transactions = []
         self.chain.append(block)
         return block
@@ -67,16 +73,42 @@ class Blockchain:
             previous_block = block
             block_index += 1
         return True
-    def add_transaction(self, sender, receiver, amount):
-       self.transactions.append({'sender': sender,
-                                 'receiver': receiver,
-                                 'amount': amount})
-       previous_block = self.get_previous_block()
-       return previous_block['index'] + 1
+    
+    def add_transaction(self, buyer_id, seller_id, property_id):
+        self.transactions.append({'buyer_id': buyer_id,
+                                  'seller_id': seller_id,
+                                  'property_id':property_id,
+                                  'timestamp':str(datetime.datetime.now())
+                                  })
+        previous_block = self.get_previous_block()
+        return previous_block['index'] + 1
+    
+    
+    def check_user(self, u_id):
+        for x in self.users:
+            if((int)(x['user_id'])==(int)(u_id)):
+                return -1
+                
+            
+    def register_user(self,u_id,property_id):  
+        if self.check_user(u_id) == -1:
+            self.user_property[u_id].append(property_id)
+           
+        self.users.append({'user_id':u_id,'property_id':property_id})
+        if(self.user_property.get(u_id)==None):
+            self.user_property[u_id]=property_id
+        else:
+            self.user_property[u_id].append(property_id)
+            return -1
+        return u_id
+           
+           
+            
+    
     def add_node(self, address):
         parsed_url = urlparse(address)
         self.nodes.add(parsed_url.netloc)
-        
+    
     def replace_chain(self):
         network = self.nodes
         longest_chain = None
@@ -93,6 +125,36 @@ class Blockchain:
             self.chain = longest_chain
             return True
         return False
+    def find_merkle_root(self,transactions):
+        file_hashes=[]
+        for t in transactions:
+            h=self.hash(t)
+            file_hashes.append(h)
+        b=[]
+        for m in sorted(file_hashes):
+            b.append(m)
+        list_len=len(b)
+
+        while list_len %2 !=0:
+            b.append(b[-1])
+            list_len=len(b)
+        secondary=[]
+        for k in [b[x:x+2] for x in range(0,len(b),2)]:
+            hasher=hashlib.sha256()
+            hasher.update((k[0]+k[1]).encode())
+            secondary.append(hasher.hexdigest())
+        if len(secondary)==1:
+            return secondary[0][0:64]
+        else:
+            return self.find_merkle_root(secondary)
+     
+            
+            
+    
+            
+            
+            
+            
 
 # Part 2 - Mining our Blockchain
 
@@ -113,14 +175,20 @@ def mine_block():
     previous_proof = previous_block['proof']
     proof = blockchain.proof_of_work(previous_proof)
     previous_hash = blockchain.hash(previous_block)
-    blockchain.add_transaction(sender = node_address, receiver = 'Node B', amount = 1)
-    block = blockchain.create_block(proof, previous_hash)
+    #blockchain.add_transaction(buyer_id = node_address, seller_id = 'Node A', property_id = 1)
+    mr=blockchain.find_merkle_root(blockchain.transactions)
+    block = blockchain.create_block(proof, previous_hash,mr)
+    t=block['transactions']
+    for x in t:
+        blockchain.user_property[x['buyer_id']].append(x['property_id'])
+        blockchain.user_property[x['seller_id']].remove(x['property_id'])
     response = {'message': 'Congratulations, you just mined a block!',
                 'index': block['index'],
                 'timestamp': block['timestamp'],
                 'proof': block['proof'],
                 'previous_hash': block['previous_hash'],
-                'transactions':block['transactions']}
+                'transactions': block['transactions'],
+                'merkle_root':mr}
     return jsonify(response), 200
 
 # Getting the full Blockchain
@@ -128,6 +196,20 @@ def mine_block():
 def get_chain():
     response = {'chain': blockchain.chain,
                 'length': len(blockchain.chain)}
+    return jsonify(response), 200
+
+
+
+@app.route('/get_users', methods = ['GET'])
+def get_users():
+    response = {'users_list':blockchain.users,
+                'number_of_users': len(blockchain.users)}
+    return jsonify(response), 200
+
+@app.route('/get_usersproperty', methods = ['GET'])
+def get_usersproperty():
+    response = {'users_list':blockchain.user_property,
+               }
     return jsonify(response), 200
 
 # Checking if the Blockchain is valid
@@ -144,18 +226,64 @@ def is_valid():
 @app.route('/add_transaction', methods = ['POST'])
 def add_transaction():
     json = request.get_json(cache=False)
-    transaction_keys = ['sender', 'receiver', 'amount']
+    print (json)
+    transaction_keys = ['buyer_id', 'seller_id', 'property_id']
     if not all(key in json for key in transaction_keys):
         return 'Some elements of the transaction are missing', 400
-    index = blockchain.add_transaction(json['sender'], json['receiver'], json['amount'])
+    if(blockchain.user_property.get(json['buyer_id'])==None):
+        return 'Invalid Buyer ID', 400
+    if(blockchain.user_property.get(json['seller_id'])==None):
+        return 'Invalid Seller ID', 400
+    properties=blockchain.user_property[json['seller_id']]
+    if(json['property_id'] not in properties):
+        return ' Seller doesnt own this property', 400
+     
+        
+        
+    index = blockchain.add_transaction(json['buyer_id'], json['seller_id'], json['property_id'])
+   
     response = {'message': f'This transaction will be added to Block {index}'}
     return jsonify(response), 201
+
+@app.route('/register', methods = ['POST'])
+def add_user():
+    json = request.get_json(cache=False)
+    user_keys = ['user_id','property_id']
+    if not all(key in json for key in user_keys):
+        return 'Enter Correct details', 400
+    user=blockchain.register_user(json['user_id'], json['property_id'])
+    
+    if (user==-1):
+        response = {'message': f'User Already Exists'}
+        return jsonify(response), 201
+    else:
+        response = {'message': f'User:{user} Registered'}
+        return jsonify(response), 201
+    
+@app.route('/transaction_history', methods = ['POST'])
+def get_th():
+    json1 = request.get_json(cache=False)
+
+    pid=json1['property_id']
+    th=[]
+    for block in blockchain.chain:
+        print(block)
+        for txn in block['transactions']:
+            if(txn['property_id']==json1['property_id']):
+                th.append(txn)
+  
+    response = {'transaction-history': th}
+    return jsonify(response), 201    
+        
+# Part 3 - Decentralizing our Blockchain
+
 # Connecting new nodes
 @app.route('/connect_node', methods = ['POST'])
 def connect_node():
     json = request.get_json(cache=False)
-
+    
     nodes = json.get('nodes')
+    print(json)
     if nodes is None:
         return "No node", 400
     for node in nodes:
@@ -163,6 +291,7 @@ def connect_node():
     response = {'message': 'All the nodes are now connected. The Hadcoin Blockchain now contains the following nodes:',
                 'total_nodes': list(blockchain.nodes)}
     return jsonify(response), 201
+
 # Replacing the chain by the longest chain if needed
 @app.route('/replace_chain', methods = ['GET'])
 def replace_chain():
@@ -176,4 +305,4 @@ def replace_chain():
     return jsonify(response), 200
 
 # Running the app
-app.run(host = '0.0.0.0', port = 5002)
+app.run(host = '0.0.0.0', port = 5001)
