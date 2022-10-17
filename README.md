@@ -1,4 +1,4 @@
-# Land Management system
+# Land Management system with PoW
 
 ## Group 39
 
@@ -22,7 +22,7 @@ Takes the required proof, previous hash and the merkle root to create a new bloc
 Returns the last block added to the blockchain.
 
 ### proof_of_work()
-Uses the previous proof to generate new hash values using sha256 until the computational requiremnet of having '0000' as the prefix of the hash is met.
+Implementation of the proof of work consensus algorithm. Uses the previous proof to generate new hash values using sha256 until the computational requiremnet of having '0000' as the prefix of the hash is met.
 
 
 ### get_chain()
@@ -60,4 +60,4 @@ Replace chain checks if the blockchain at a particular node is the longest chain
 ### find_merkle_root()
 Hash values are generated for the list of transactions and stored in a sorted order. If the number of transactions are odd, the last hash is duplicated. The process is repeated to finally obtain the merkle root or the root hash value.
 
-
+## Flask is used with Postman for sending and receving releavnt JSON data via function calls.
