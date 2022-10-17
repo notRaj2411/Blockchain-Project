@@ -12,15 +12,15 @@ Utkarsh Tiwari - 2019B1A71147H<br/>
 * Make sure the appropriate libraries are download and can be accessed by the code.
      
 1.  Run 1 or upto all 3 of node_5001.py, node_5002.py & node_5003.py on separate terminals to access them as 3 separate nodes for the Blockchain system.  
+2.  To connect the current node with other nodes of the system, send a post request with route as 'localhost/connect_node' and the respective node addresses in JSON format. 
+3.  To register a new user send a post request with route as 'localhost/register' and user_id and property_id in JSON format.
+4.  To inititate a transaction, send a post request with route as 'localhost/add_transaction' and buyer_id, seller_id and property_id in JSON format.
+5.  To mine a block send  a get request with route as 'localhost/mine_block'.
+6.  To get transaction history related to a property send  a post request with route as 'localhost/transaction_history' and property_id in JSON format.
+7.  To get the current status of the blockchain send a get request with route as 'localhost/get_chain'.
+8.  To get the registered users along with the properties send a get request with route as 'localhost/get_usersproperty'.
+9.  To replace the current chain at that node with the longest chain in the blockchain, send a get request with route as 'localhost/replace_chain'.
 
-2.  To register a new user send a post request with route as 'localhost/register' and user_id and property_id in JSON format.
-3.  To inititate a transaction, send a post request with route as 'localhost/add_transaction' and buyer_id, seller_id and property_id in JSON format.
-4.  To mine a block send  a get request with route as 'localhost/mine_block'.
-5.  To get transaction history related to a property send  a post request with route as 'localhost/transaction_history' and property_id in JSON format.
-6.  To get the current status of the blockchain send a get request with route as 'localhost/get_chain'.
-7.  To get the registered users along with the properties send a get request with route as 'localhost/get_usersproperty'.
-8.  To replace the current chain at that node with the longest chain in the blockchain, send a get request with route as 'localhost/replace_chain'.
-9.  To connect the current node with other nodes of the system, send a post request with route as 'localhost/connect_node' and the respective node addresses in JSON form
 
 ## Libraries used:
 * datetime
