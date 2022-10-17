@@ -10,6 +10,7 @@ Utkarsh Tiwari - 2019B1A71147H<br/>
 
 ## To Run:
 * Make sure the appropriate libraries are download and can be accessed by the code.
+* Flask is used with Postman for sending and receving relevant JSON data and function calls.
      
 1.  Run 1 or upto all 3 of node_5001.py, node_5002.py & node_5003.py on separate terminals to access them as 3 separate nodes for the Blockchain system.  
 2.  To connect the current node with other nodes of the system, send a post request with route as 'localhost/connect_node' and the respective node addresses in JSON format. 
@@ -84,5 +85,3 @@ Replace chain checks if the blockchain at a particular node is the longest chain
 
 ### find_merkle_root()
 Hash values are generated for the list of transactions and stored in a sorted order. If the number of transactions are odd, the last hash is duplicated. The process is repeated to finally obtain the merkle root or the root hash value.
-
-### Flask is used with Postman for sending and receving releavnt JSON data via function calls.
