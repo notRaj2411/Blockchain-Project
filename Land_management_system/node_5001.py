@@ -94,8 +94,8 @@ class Blockchain:
      #function to register users       
     def register_user(self,u_id,property_id):  
         if self.check_user(u_id) == -1:
-            self.user_property[u_id].append(property_id)
-           
+            #self.user_property[u_id].append(property_id)
+            return -1
         self.users.append({'user_id':u_id,'property_id':property_id})
         if(self.user_property.get(u_id)==None):
             self.user_property[u_id]=property_id
