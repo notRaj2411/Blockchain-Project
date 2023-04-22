@@ -1,11 +1,14 @@
-# Land Management system with PoW
+# Land Management system with PoW and ZKP
 
-## Group 39
+## Group 16
 
-Ashish AVS - 2019B2A7PS1435H<br/>
 Abhsihek Jalan - 2019B1A71547H<br/>
+Madugula Likith Sai - 2019B5A70980H<br/>
 Raj Srivastava - 2019B1A71426H<br/>
-Utkarsh Tiwari - 2019B1A71147H<br/>
+Sambhav Jain - 2019B5A71100H<br/>
+Shivam Kedia - 2019B4A71011H<br/>
+Tarun Alapati - 2019B3A70733h<br/>
+
 
 
 ## To Run:
@@ -66,13 +69,14 @@ Generates the hash value for a particular transaction or block.
 Checks if the current state of the blockchain is valid. For each block, it check if the previous hash value is the same as the hash of the previous block. It also checks for each block by using the current and previous proof for the proof of work, i.e., '0000'.
 
 ### add_transaction()
-Adds a new transaction with buyer_id, seller_id, property_id and timestamp. 
+Adds a new transaction with buyer_id, seller_id, property_id and timestamp.
+ZKP(Zero Knowledge Proof) is implemented in this function.Password attribute of user is checked through ZKP.If a user fails zero knowledge proof to confirm their identity then their transaction will be discarded and it won't be added to the blockchain.
 
 ### check_user()
 Checks if a user is already registered
 
 ### register_user()
-Registers a new user to the system, along with all their owned properites, if the user_id doesnot already exist by calling the check_user() function.
+Registers a new user to the system, along with all their owned properites and their password, if the user_id doesnot already exist by calling the check_user() function.
 
 ### get_users()
 Returns all the users that are currently added to the system.
@@ -85,3 +89,4 @@ Replace chain checks if the blockchain at a particular node is the longest chain
 
 ### find_merkle_root()
 Hash values are generated for the list of transactions and stored in a sorted order. If the number of transactions are odd, the last hash is duplicated. The process is repeated to finally obtain the merkle root or the root hash value.
+
